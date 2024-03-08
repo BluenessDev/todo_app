@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Archi logicielle - GUI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>Archi logicielle - GUI</h1>
+</header>
+<main>
+    <p>Vous êtes sur la page d'accueil de l'application Toudou. Il y a actuellement {{ data['total_tasks'] }} taches dans la base
+        de données.</p>
+    <a id="add" href="#ajouter">Ajouter une tache</a>
+    <div id="ajouter" class="modal">
+        <div class="modal_content">
+            <h2>Ajouter une tache</h2>
+            <a href="#" class="modal_close">X</a>
+            <form action="/create" method="post">
+                <label for="task1">Tache</label>
+                <input type="text" id="task1" name="task" required>
+                <br>
+                <label for="due1">Date de fin</label>
+                <input type="date" id="due1" name="due" required>
+                <br>
+                <label for="time">Heure de fin :</label>
+                <input type="time" id="time" step="1" name="time" required>
+                <br>
+                <input type="submit" value="Ajouter">
+            </form>
+        </div>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tache</th>
+            <th>Statut</th>
+            <th>Date de fin</th>
+            <th>Heure de fin</th>
+            <th>Supprimer</th>
+            <th>Modifier</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in data['todos'] %}
+        <tr>
+            <td id="id">{{ task.id }}</td>
+            <td>{{ task.task }}</td>
+            <td>{{ 'Terminée' if task.complete else 'Non terminée' }}</td>
+            <td>{{ task.due.date() }}</td>
+            <td>{{ task.due.time() }}</td>
+            <td>
+                <a href="#delete" style="background-color: #af0303">Supprimer</a>
+                <div id="delete" class="modal">
+                    <div class="modal_content">
+                        <h2>Supprimer la tache</h2>
+                        <a href="#" class="modal_close">X</a>
+                        <form action="/delete/{{ task.id }}" method="post">
+                            <p>Voulez-vous vraiment supprimer la tache ?</p>
+                            <div class="confirm">
+                                <a href="/delete/{{ task.id }}" style="background-color: #af0303; margin-right: 10px ">Confirmer</a>
+                                <a href="#">Annuler</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <a href="#modifier{{ task.id }}"
+                   onclick="openUpdateForm('{{ task.id }}', '{{ task.task.replace("'", "\\'") }}', '{{ task.due }}', '{{
+                task.complete }}')">Modifier</a>
+                <div id="modifier{{ task.id }}" class="modal">
+                    <div class="modal_content">
+                        <h2>Modifier la tache</h2>
+                        <a href="#" class="modal_close">X</a>
+                        <form action="/update/{{ task.id }}" method="post">
+                            <input type="hidden" id="updateId{{ task.id }}" name="id">
+                            <label for="updateTask{{ task.id }}">Tache :</label>
+                            <input type="text" id="updateTask{{ task.id }}" name="task" required>
+                            <br>
+                            <label for="updateComplete{{ task.id }}">Completé :</label>
+                            <input type="checkbox" id="updateComplete{{ task.id }}" name="complete">
+                            <br>
+                            <br>
+                            <label for="updateDue{{ task.id }}">Date de fin :</label>
+                            <input type="date" id="updateDue{{ task.id }}" name="due" required>
+                            <br>
+                            <label for="updateTime{{ task.id }}">Heure de fin :</label>
+                            <input type="time" id="updateTime{{ task.id }}" name="time" step="1" required>
+                            <br>
+                            <input type="submit" value="Modifier">
+                        </form>
+                        <script>
+                            function openUpdateForm(id, task, due, complete) {
+                                document.getElementById('updateId' + id).value = id;
+                                document.getElementById('updateTask' + id).value = task;
+                                var dueParts = due.split(' ');
+                                var dateParts = dueParts[0].split('-');
+                                var dueDate = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
+                                document.getElementById('updateDue' + id).valueAsDate = dueDate;
+                                var checkbox = document.getElementById('updateComplete' + id);
+                                checkbox.checked = complete === 'True';
+                                var time = dueParts[1];
+                                document.getElementById('updateTime' + id).value = time;
+                            }
+                        </script>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="pagesuivante">
+        {% if data['has_prev'] %}
+        <a href="{{ url_for('index', page=data['prev_num']) }}" class="{{ 'disabled' if not data['has_prev'] }}">Page
+            précédente</a>
+        {% else %}
+        <a class="disabled">Page précédente</a>
+        {% endif %}
+        {% if data['has_next'] %}
+        <a href="{{ url_for('index', page=data['next_num']) }}" class="{{ 'disabled' if not data['has_next'] }}">Page
+            suivante</a>
+        {% else %}
+        <a class="disabled">Page suivante</a>
+        {% endif %}
+        <p>Page {{ page }} sur {{ data['total_pages'] }}</p>
+    </div>
+</main>
+<footer>
+    <p>Cyril TILAN - 2024</p>
+</footer>
+</body>
+</html>
