@@ -31,6 +31,28 @@
             </form>
         </div>
     </div>
+    <a href="#Importer" id="import">Importer un csv</a>
+    <div id="Importer" class="modal">
+        <div class="modal_content">
+            <h2>Importer un fichier csv</h2>
+            <a href="#" class="modal_close">X</a>
+            <form action="/import" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" id="file" accept=".csv">
+                <input type="submit" value="Importer">
+            </form>
+        </div>
+    </div>
+    <a href="#Exporter" id="export">Exporter un csv</a>
+    <div id="Exporter" class="modal">
+        <div class="modal_content">
+            <h2>Exporter un fichier csv</h2>
+            <a href="#" class="modal_close">X</a>
+            <form action="/export" method="post">
+                <label for="export1">Nom du fichier</label>
+                <input type="text" id="export1" name="export" placeholder="Le .csv sera rajouté automatiquement" required>
+                <input type="submit" value="Exporter">
+        </div>
+    </div>
     <table>
         <thead>
         <tr>

@@ -149,6 +149,25 @@ def get_all_todos() -> list[Todo]:
         return result.fetchall()
 
 
+def get_all_todos_export() -> list[Todo]:
+    """
+    Get all todos from the database for export
+    :return:
+    """
+    stmt = todos_table.select()
+
+    with engine.begin() as conn:
+        result = conn.execute(stmt)
+        rows = result.fetchall()
+
+    return [Todo(
+        id=row.id,
+        task=row.task,
+        complete=row.complete,
+        due=row.due
+    ) for row in rows]
+
+
 def get_all_todos_html(page: int = 1, per_page: int = 6) -> dict:
     """
     Get all todos from the database for the web app with pagination

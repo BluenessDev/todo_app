@@ -123,7 +123,7 @@ a {
     background-color: white;
 }
 
-#add {
+#add, #import, #export {
     background-color: #24263d;
     padding: 14px 20px;
     margin: 20px;
@@ -139,7 +139,7 @@ a:hover {
     color: #9a9a9a;
 }
 
-input[type="text"], input[type="date"], input[type="time"] {
+input[type="text"], input[type="date"], input[type="time"], input[type="file"] {
     width: 100%;
     padding: 12px 20px;
     margin: 8px 0;

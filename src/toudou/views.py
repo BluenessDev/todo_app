@@ -169,3 +169,28 @@ def update(id: uuid.UUID):
     else:
         data = models.get_all_todos_html(page)
         return render_template('index.html', data=data)
+
+@app.route('/import', methods=['GET', 'POST'])
+def import_csv():
+    """
+    Import todos from a CSV file for the web app
+    :return:
+    """
+    if request.method == 'POST':
+        csv_file = request.files['csv_file']
+        services.import_from_csv_database(csv_file)
+        return redirect(url_for('index'))
+    else:
+        return render_template('import.html')
+
+@app.route('/export', methods=['POST'])
+def export_csv():
+    """
+    Export todos to a CSV file for the web app
+    :return:
+    """
+    filename = request.form['export']
+    filename = f"{filename}.csv" if not filename.endswith('.csv') else filename
+    services.export_to_csv_file_db(filename)
+    return redirect(url_for('index'))
+
