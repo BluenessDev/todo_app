@@ -10,6 +10,10 @@ Ce fichier contient les définitions des modèles de données utilisés dans vot
 
 Ce fichier contient les définitions des commandes CLI et des routes de l'application web. Il utilise le module `click` pour définir les commandes CLI et `Flask` pour l'application web.
 
+## `src/toudou/services.py`
+
+Ce fichier contient les fonctions de service qui comprennent la manipulation des données en format CSV
+
 ## `src/toudou/templates/index.html`
 
 Ce fichier est un template HTML utilisé par l'application web pour afficher la page d'accueil. Il utilise le moteur de templates Jinja2 fourni par Flask.
@@ -27,6 +31,7 @@ Voici une représentation de la structure du projet :
 ├── src
 │   ├── toudou
 │   │   ├── models.py
+│   │   ├── services.py
 │   │   ├── views.py
 │   │   ├── templates
 │   │   │   ├── index.html
@@ -38,3 +43,7 @@ Voici une représentation de la structure du projet :
 ## Comment exécuter le code
 
 Pour exécuter le code, vous pouvez utiliser l'IDE PyCharm. Ouvrez le projet dans PyCharm, puis exécutez `views.py` en utilisant le terminal avec la commande ```pdm run toudou``` suivi de la commande que vous souhaitez exécuter. Si vous souhaitez demarrer l'application web, utilisez la commande ```pdm run flask --app toudou.views --debug run``` dans le terminal. Si vous souhaitez exécuter les tests, utilisez la commande ```pdm run python -m unittest Tests.test_models``` dans le terminal.
+
+## Que contient l'application web
+
+L'application web contient une page d'accueil qui affiche une liste de tâches à faire. Vous pouvez ajouter de nouvelles tâches, modifier et supprimer des tâches. Les données sont stockées dans une base de données SQLite. Vous pouvez également exporter ou importer les données au format CSV.

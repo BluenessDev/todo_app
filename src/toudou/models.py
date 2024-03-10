@@ -235,3 +235,14 @@ def delete_todo(id: str) -> None:
 
     with engine.begin() as conn:
         result = conn.execute(stmt)
+
+
+def clear_database() -> None:
+    """
+    Clear all todos from the database
+    :return:
+    """
+    stmt = todos_table.delete()
+
+    with engine.begin() as conn:
+        result = conn.execute(stmt)

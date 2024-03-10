@@ -126,7 +126,20 @@ a {
 #add, #import, #export {
     background-color: #24263d;
     padding: 14px 20px;
-    margin: 20px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: 20px;
+    display: inline-block;
+    border-radius: 4px;
+    box-sizing: border-box;
+    text-align: center;
+    text-decoration: none;
+}
+
+#import, #export {
+    background-color: #24263d;
+    padding: 14px 20px;
+    margin-left: 5px;
     display: inline-block;
     border-radius: 4px;
     box-sizing: border-box;

@@ -2,6 +2,7 @@ import click
 import uuid
 
 from datetime import datetime
+from io import TextIOWrapper
 
 import toudou.models as models
 import toudou.services as services
@@ -101,6 +102,15 @@ def delete(id: uuid.UUID):
     """
     models.delete_todo(id)
 
+
+@cli.command()
+def clear():
+    """
+    Clear the database
+    :return:
+    """
+    models.clear_database()
+
 # ------------------------------
 # GUI web app
 # ------------------------------
@@ -170,18 +180,17 @@ def update(id: uuid.UUID):
         data = models.get_all_todos_html(page)
         return render_template('index.html', data=data)
 
-@app.route('/import', methods=['GET', 'POST'])
+@app.route('/import', methods=['POST'])
 def import_csv():
     """
     Import todos from a CSV file for the web app
     :return:
     """
-    if request.method == 'POST':
-        csv_file = request.files['csv_file']
-        services.import_from_csv_database(csv_file)
-        return redirect(url_for('index'))
-    else:
-        return render_template('import.html')
+    csv_file = request.files['file']
+    csv_file = TextIOWrapper(csv_file, encoding='utf-8')
+    models.clear_database()
+    services.import_from_csv_database(csv_file)
+    return redirect(url_for('index'))
 
 @app.route('/export', methods=['POST'])
 def export_csv():
