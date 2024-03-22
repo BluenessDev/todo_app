@@ -34,13 +34,14 @@ def import_from_csv_database(csv_file: io.StringIO) -> None:
         write_to_db(todo)
 
 
-def export_to_csv_file_db(filename: str) -> None:
+def export_to_csv_file_db() -> io.StringIO:
     todos = get_all_todos_export()
-    print(todos)  # Temporary print statement to debug the content of todos
-    with open(filename, 'w', newline='') as csvfile:
-        fieldnames = [f.name for f in dataclasses.fields(Todo)]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    csvfile = io.StringIO()
+    fieldnames = [f.name for f in dataclasses.fields(Todo)]
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-        writer.writeheader()
-        for todo in todos:
-            writer.writerow(dataclasses.asdict(todo))  # Convert todo object to dictionary
+    writer.writeheader()
+    for todo in todos:
+        writer.writerow(dataclasses.asdict(todo)) # Convert todo object to dictionary
+
+    return csvfile

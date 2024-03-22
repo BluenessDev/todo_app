@@ -5,14 +5,14 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-import sqlite3
 import math
 
 from sqlalchemy import Table, MetaData, create_engine, Column, Uuid, String, Boolean, DateTime
+from toudou import config
 
 TODO_FOLDER = "db"
 
-engine = create_engine("sqlite:///todos.db", echo=True)
+engine = create_engine(config["DATABASE_URL"], echo=config["DEBUG"])
 metadata = MetaData()
 
 todos_table = Table(
@@ -38,18 +38,7 @@ def init_db() -> None:
     Initialize the database
     :return:
     """
-    conn = sqlite3.connect("todos.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS todos (
-            id TEXT PRIMARY KEY,
-            task TEXT NOT NULL,
-            complete BOOLEAN NOT NULL,
-            due TIMESTAMP
-        )
-        """
-    )
+    metadata.create_all(engine)
 
 
 def read_from_file(filename: str) -> Todo:
@@ -168,7 +157,7 @@ def get_all_todos_export() -> list[Todo]:
     ) for row in rows]
 
 
-def get_all_todos_html(page: int = 1, per_page: int = 6) -> dict:
+def get_paginated_todos_for_web(page: int = 1, per_page: int = 6) -> dict:
     """
     Get all todos from the database for the web app with pagination
     :param page:

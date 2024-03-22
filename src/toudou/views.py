@@ -4,10 +4,12 @@ import uuid
 from datetime import datetime
 from io import TextIOWrapper
 
+from io import BytesIO
+import flask
 import toudou.models as models
+import secrets
 import toudou.services as services
-from flask import render_template, Flask, redirect, url_for, request
-
+from flask import render_template, Flask, redirect, url_for, request, Blueprint, abort, flash, send_file, make_response, Response
 
 @click.group()
 def cli():
@@ -111,25 +113,58 @@ def clear():
     """
     models.clear_database()
 
+
 # ------------------------------
 # GUI web app
 # ------------------------------
 
-app = Flask(__name__)
+web_ui = Blueprint('web_ui', __name__, url_prefix='/')
 
-@app.route('/')
+
+def generate_secret_key():
+    return secrets.token_hex(32)
+
+
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = generate_secret_key()
+    app.register_blueprint(web_ui)
+    return app
+
+
+@web_ui.errorhandler(500)
+def handle_internal_error(error):
+    flash("Page < 1 : Abandon du chargement d'index", "error")
+    return redirect(url_for("web_ui.index", page=request.args.get('page', 1)))
+
+
+@web_ui.errorhandler(501)
+def handle_internal_error(error):
+    flash("Correspondance incorrecte entre les deux tickets", "error")
+    return redirect(url_for("web_ui.index", page=request.args.get('page', 1)))
+
+
+@web_ui.errorhandler(502)
+def handle_internal_error(error):
+    flash("Méthode HTTP non autorisée", "error")
+    return redirect(url_for("web_ui.index", page=request.args.get('page', 1)))
+
+
+@web_ui.route('/', methods=['GET'])
 def index():
     """
     Index page of the web app
     :return:
     """
     page = request.args.get('page', 1, type=int)
-    data = models.get_all_todos_html(page)
+    abort(500) if page < 1 else None
+    data = models.get_paginated_todos_for_web(page)
     total_tasks = len(models.get_all_todos())
     data['total_tasks'] = total_tasks
     return render_template('index.html', data=data, page=page)
 
-@app.route('/create', methods=['GET', 'POST'])
+
+@web_ui.route('/create', methods=['GET', 'POST'])
 def create():
     """
     Create a new todo for the web app
@@ -146,20 +181,28 @@ def create():
             task=task,
             due=due
         )
-        return redirect(url_for('index'))
+        return redirect(url_for('web_ui.index', page=request.args.get('page', 1)))
 
 
-@app.route('/delete/<id>', methods=['GET'])
+@web_ui.route('/delete/<uuid:id>', methods=['POST'])
 def delete(id: uuid.UUID):
     """
     Delete a todo by id for the web app
     :param id:
     :return:
     """
-    models.delete_todo(id)
-    return redirect(url_for('index'))
+    identifiant = request.form['identifiant']
+    if not identifiant or identifiant != str(id):
+        abort(501)
+    identifiant = uuid.UUID(identifiant)
+    todo = models.get_todo(identifiant)
+    if not todo:
+        abort(501)
+    models.delete_todo(identifiant)
+    return redirect(url_for('web_ui.index', page=request.args.get('page', 1)))
 
-@app.route('/update/<id>', methods=['GET', 'POST'])
+
+@web_ui.route('/update/<uuid:id>', methods=['GET', 'POST'])
 def update(id: uuid.UUID):
     """
     Update a todo by id for the web app
@@ -175,12 +218,12 @@ def update(id: uuid.UUID):
         due = datetime.combine(due, time.time()) if time else due
         complete = request.form.get('complete') == 'on'
         models.update_todo(id, task, complete, due)
-        return redirect(url_for('index'))
+        return redirect(url_for('web_ui.index', page=request.args.get('page', 1)))
     else:
-        data = models.get_all_todos_html(page)
-        return render_template('index.html', data=data)
+        abort(502)
 
-@app.route('/import', methods=['POST'])
+
+@web_ui.route('/import', methods=['POST'])
 def import_csv():
     """
     Import todos from a CSV file for the web app
@@ -190,9 +233,10 @@ def import_csv():
     csv_file = TextIOWrapper(csv_file, encoding='utf-8')
     models.clear_database()
     services.import_from_csv_database(csv_file)
-    return redirect(url_for('index'))
+    return redirect(url_for('web_ui.index', page=request.args.get('page', 1)))
 
-@app.route('/export', methods=['POST'])
+
+@web_ui.route('/export', methods=['POST'])
 def export_csv():
     """
     Export todos to a CSV file for the web app
@@ -200,6 +244,9 @@ def export_csv():
     """
     filename = request.form['export']
     filename = f"{filename}.csv" if not filename.endswith('.csv') else filename
-    services.export_to_csv_file_db(filename)
-    return redirect(url_for('index'))
-
+    csv_file = services.export_to_csv_file_db()
+    csv_content = csv_file.getvalue().encode()  # Convert string to bytes
+    csv_bytes_io = BytesIO(csv_content)
+    response = make_response(send_file(csv_bytes_io, mimetype='text/csv', as_attachment=True, download_name=filename))
+    response.headers.set('Content-Disposition', 'attachment', filename=filename)
+    return response

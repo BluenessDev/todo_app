@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>Archi logicielle - GUI</title>
@@ -10,7 +10,8 @@
     <h1>Archi logicielle - GUI</h1>
 </header>
 <main>
-    <p>Vous êtes sur la page d'accueil de l'application Toudou. Il y a actuellement {{ data['total_tasks'] }} taches dans la base
+    <p>Vous êtes sur la page d'accueil de l'application Toudou. Il y a actuellement {{ data['total_tasks'] }} taches
+        dans la base
         de données.</p>
     <a id="add" href="#ajouter">Ajouter une tache</a>
     <div id="ajouter" class="modal">
@@ -51,7 +52,8 @@
             <a href="#" class="modal_close">X</a>
             <form action="/export" method="post">
                 <label for="export1">Nom du fichier</label>
-                <input type="text" id="export1" name="export" placeholder="Le .csv sera rajouté automatiquement" required>
+                <input type="text" id="export1" name="export" placeholder="Le .csv sera rajouté automatiquement"
+                       required>
                 <input type="submit" value="Exporter">
             </form>
         </div>
@@ -77,17 +79,15 @@
             <td>{{ task.due.date() }}</td>
             <td>{{ task.due.time() }}</td>
             <td>
-                <a href="#delete" style="background-color: #af0303">Supprimer</a>
-                <div id="delete" class="modal">
+                <a href="#delete{{ task.id }}" style="background-color: #af0303">Supprimer</a>
+                <div id="delete{{ task.id }}" class="modal">
                     <div class="modal_content">
                         <h2>Supprimer la tache</h2>
                         <a href="#" class="modal_close">X</a>
                         <form action="/delete/{{ task.id }}" method="post">
                             <p>Voulez-vous vraiment supprimer la tache ?</p>
-                            <div class="confirm">
-                                <a href="/delete/{{ task.id }}" style="background-color: #af0303; margin-right: 10px ">Confirmer</a>
-                                <a href="#">Annuler</a>
-                            </div>
+                            <input type="hidden" name="identifiant" value="{{ task.id }}">
+                            <input id='exception' type="submit" style="background-color: #af0303; margin-right: 10px " value="Confirmer">
                         </form>
                     </div>
                 </div>
@@ -140,13 +140,13 @@
     </table>
     <div class="pagesuivante">
         {% if data['has_prev'] %}
-        <a href="{{ url_for('index', page=data['prev_num']) }}" class="{{ 'disabled' if not data['has_prev'] }}">Page
+        <a href="{{ url_for('web_ui.index', page=data['prev_num']) }}" class="{{ 'disabled' if not data['has_prev'] }}">Page
             précédente</a>
         {% else %}
         <a class="disabled">Page précédente</a>
         {% endif %}
         {% if data['has_next'] %}
-        <a href="{{ url_for('index', page=data['next_num']) }}" class="{{ 'disabled' if not data['has_next'] }}">Page
+        <a href="{{ url_for('web_ui.index', page=data['next_num']) }}" class="{{ 'disabled' if not data['has_next'] }}">Page
             suivante</a>
         {% else %}
         <a class="disabled">Page suivante</a>
